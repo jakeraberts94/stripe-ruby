@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.base44
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - BASE44_PREVIEW_MODE
+      - STRIPE_MOCK_PORT=12111
+    command: ["sh", "-ec", "stripe-mock -http-port 12111 & sleep 1 && bundle install --quiet && exec ruby base44/dashboard.rb"]
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "ruby", "-e", "require 'net/http'; Net::HTTP.get_response(URI('http://localhost:3000/health'))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
