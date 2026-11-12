@@ -1,0 +1,10 @@
+FROM ruby:3.3-slim
+
+# Install stripe-mock (mock Stripe API server needed by the test suite)
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git build-essential && \
+    curl -sL https://github.com/stripe/stripe-mock/releases/download/v0.206.0/stripe-mock_0.206.0_linux_amd64.tar.gz | tar xz -C /usr/local/bin && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN gem install webrick --no-document
+
+WORKDIR /app

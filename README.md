@@ -430,6 +430,47 @@ just update-certs
 # or: bundle exec rake update_certs
 ```
 
+### Running the test suite in Docker
+
+The repository includes a Docker Compose setup that provides Ruby, `stripe-mock`, and the
+build tooling the test suite needs, so you can run the full suite without installing Ruby
+or `stripe-mock` locally.
+
+Build the image and start the service:
+
+```sh
+docker compose -f docker-compose.base44.yml up -d --build
+```
+
+The first start installs the gems with `bundle install`, so it takes a minute or so.
+`stripe-mock` is started inside the container on port 12111. No Stripe API key or webhook
+secret is needed, because every request the tests make is served by `stripe-mock`.
+
+Run the whole suite:
+
+```sh
+docker compose -f docker-compose.base44.yml exec app bundle exec rake test
+```
+
+Run a single test file or a single test the same way, for example:
+
+```sh
+docker compose -f docker-compose.base44.yml exec app bundle exec ruby -Ilib/ test/stripe/util_test.rb
+```
+
+The service also serves a small dashboard on http://localhost:3000 that runs the suite in
+the background and reports pass/fail counts along with the test output.
+
+Stop the stack with:
+
+```sh
+docker compose -f docker-compose.base44.yml down
+```
+
+The image is based on `ruby:3.3-slim` and includes `git` and `build-essential` (required by
+the gemspec's `git ls-files` call and by native gem extensions) plus `webrick`, which is no
+longer bundled with Ruby 3.3+.
+
 [api-keys]: https://dashboard.stripe.com/account/apikeys
 [connect]: https://stripe.com/connect
 [curl]: http://curl.haxx.se/docs/caextract.html
